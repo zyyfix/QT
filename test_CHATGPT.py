@@ -153,23 +153,32 @@ def live_trading():
         print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 if __name__ == '__main__':
-    cerebro = bt.Cerebro()
+    # 选择运行模式：回测或实时交易
+    mode = input("请选择运行模式（1: 回测, 2: 实时交易）: ")
     
-    # 1. 加载数据（示例使用浦发银行600000.SH）
-    data = AKShareData(dataname=fetch_data(symbol="600000", start_date="20200101"))
-    cerebro.adddata(data)
+    if mode == '1':
+        cerebro = bt.Cerebro()
+        
+        # 1. 加载数据（示例使用浦发银行600000.SH）
+        data = AKShareData(dataname=fetch_data(symbol="600000", start_date="20200101"))
+        cerebro.adddata(data)
+        
+        # 2. 添加策略
+        cerebro.addstrategy(MultiIndicatorStrategy)
+        
+        # 3. 设置初始资金和手续费
+        cerebro.broker.setcash(100000.0)
+        cerebro.broker.setcommission(commission=0.0003)  # 0.03%手续费
+        
+        # 4. 运行回测
+        print('初始资金: %.2f' % cerebro.broker.getvalue())
+        cerebro.run()
+        print('最终资金: %.2f' % cerebro.broker.getvalue())
+        
+        # 5. 可视化
+        cerebro.plot(style='candlestick', volume=True)
     
-    # 2. 添加策略
-    cerebro.addstrategy(MultiIndicatorStrategy)
-    
-    # 3. 设置初始资金和手续费
-    cerebro.broker.setcash(100000.0)
-    cerebro.broker.setcommission(commission=0.0003)  # 0.03%手续费
-    
-    # 4. 运行回测
-    print('初始资金: %.2f' % cerebro.broker.getvalue())
-    cerebro.run()
-    print('最终资金: %.2f' % cerebro.broker.getvalue())
-    
-    # 5. 可视化
-    cerebro.plot(style='candlestick', volume=True)
+    elif mode == '2':
+        live_trading()
+    else:
+        print("无效的选择，请输入1或2。")
